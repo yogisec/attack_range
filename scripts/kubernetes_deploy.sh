@@ -1,8 +1,8 @@
 #!/bin/bash
 
-export KOPS_STATE_STORE=s3://kops-yogi-state-store/yogi.dev.us-east-1.k8s.local
+export KOPS_STATE_STORE=s3:///yogi.dev.us-east-1.k8s.local
 
-# kops create cluster --zones=us-east-1f yogi.dev.us-east-1.k8s.local --node-count=2 --admin-access=70.179.208.28/32 --state s3://kops-yogi-state-store
+# kops create cluster --zones=us-east-1f yogi.dev.us-east-1.k8s.local --node-count=2 --admin-access=70.179.208.28/32 --state s3://
 # kops create -f yogi-init.yaml
 
 # Install KOPS

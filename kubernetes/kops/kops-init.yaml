@@ -14,7 +14,7 @@ spec:
     rbac: {}
   channel: stable
   cloudProvider: aws
-  configBase: s3://kops-yogi-state-store/yogi.dev.us-east-1.k8s.local
+  configBase: s3:// /yogi.dev.us-east-1.k8s.local
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
@@ -42,7 +42,7 @@ spec:
     auditLogPath: /var/log/kube-apiserver-audit.log
     auditPolicyFile: /srv/kubernetes/kube-apiserver/audit-policy-config.yaml
   kubernetesApiAccess:
-  - 70.179.208.28/32
+  - <IP ADDRESS HERE>
   kubernetesVersion: 1.22.2
   masterPublicName: api.yogi.dev.us-east-1.k8s.local
   networkCIDR: 172.20.0.0/16
@@ -51,7 +51,7 @@ spec:
   nonMasqueradeCIDR: 100.64.0.0/10
   sshKeyName: kops
   sshAccess:
-  - 70.179.208.28/32
+  - <IP ADDRESS HERE>
   subnets:
   - cidr: 172.20.32.0/19
     name: us-east-1f

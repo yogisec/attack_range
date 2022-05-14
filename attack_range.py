@@ -68,6 +68,10 @@ starting program loaded for B1 battle droid """ + Back.BLACK + Fore.BLUE + Style
         log.error('ERROR: zeek sensor only available for aws in the moment. Please change zeek_sensor to 0 and try again.')
         sys.exit(1)
 
+    if config['provider'] == 'azure' and config['kubernetes'] == '1':
+        log.error('ERROR: Kubernetes deployment only available for aws in the moment. Please change kubernetes to 0 and try again.')
+        sys.exit(1)
+
     if config['provider'] == 'aws' and config['windows_client'] == '1':
         log.error('ERROR: windows client is only support for Azure.')
         sys.exit(1)
