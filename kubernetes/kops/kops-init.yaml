@@ -1,0 +1,159 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2021-11-10T13:26:42Z"
+  name: yogi.dev.us-east-1.k8s.local
+spec:
+  clusterAutoscaler:
+    enabled: false
+  api:
+    loadBalancer:
+      class: Classic
+      type: Public
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider: aws
+  configBase: s3://kops-yogi-state-store/yogi.dev.us-east-1.k8s.local
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - encryptedVolume: true
+      instanceGroup: master-us-east-1f
+      name: f
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - encryptedVolume: true
+      instanceGroup: master-us-east-1f
+      name: f
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubelet:
+    anonymousAuth: true
+  kubeAPIServer:
+    auditLogMaxAge: 10
+    auditLogMaxBackups: 1
+    auditLogMaxSize: 100
+    auditLogPath: /var/log/kube-apiserver-audit.log
+    auditPolicyFile: /srv/kubernetes/kube-apiserver/audit-policy-config.yaml
+  kubernetesApiAccess:
+  - 70.179.208.28/32
+  kubernetesVersion: 1.22.2
+  masterPublicName: api.yogi.dev.us-east-1.k8s.local
+  networkCIDR: 172.20.0.0/16
+  networking:
+    kubenet: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshKeyName: kops
+  sshAccess:
+  - 70.179.208.28/32
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: us-east-1f
+    type: Public
+    zone: us-east-1f
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
+  fileAssets:
+  - name: audit-policy-config
+    path: /srv/kubernetes/kube-apiserver/audit-policy-config.yaml
+    roles:
+    - Master
+    content: |
+      apiVersion: audit.k8s.io/v1
+      kind: Policy
+      rules:
+      # do not log requests to the following 
+      - level: None
+        nonResourceURLs:
+        - "/healthz*"
+        - "/logs"
+        - "/metrics"
+        - "/swagger*"
+        - "/version"
+
+      # limit level to Metadata so token is not included in the spec/status
+      - level: Metadata
+        omitStages:
+        - RequestReceived
+        resources:
+        - group: authentication.k8s.io
+          resources:
+          - tokenreviews
+
+      # extended audit of auth delegation
+      - level: RequestResponse
+        omitStages:
+        - RequestReceived
+        resources:
+        - group: authorization.k8s.io
+          resources:
+          - subjectaccessreviews
+
+      # log changes to pods at RequestResponse level
+      - level: RequestResponse
+        omitStages:
+        - RequestReceived
+        resources:
+        - group: "" # core API group; add third-party API services and your API services if needed
+          resources: ["pods"]
+          verbs: ["create", "patch", "update", "delete"]
+
+      # log everything else at Metadata level
+      - level: Metadata
+        omitStages:
+        - RequestReceived
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: yogi.dev.us-east-1.k8s.local
+  name: master-us-east-1f
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118
+  instanceMetadata:
+    httpPutResponseHopLimit: 3
+    httpTokens: required
+  machineType: t3.medium
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-us-east-1f
+  role: Master
+  subnets:
+  - us-east-1f
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: yogi.dev.us-east-1.k8s.local
+  name: nodes-us-east-1f
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118
+  instanceMetadata:
+    httpPutResponseHopLimit: 1
+    httpTokens: required
+  machineType: t3.medium
+  maxSize: 2
+  minSize: 2
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes-us-east-1f
+  role: Node
+  subnets:
+  - us-east-1f
