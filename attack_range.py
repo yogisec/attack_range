@@ -6,17 +6,14 @@ from modules import configuration
 from pathlib import Path
 from modules.CustomConfigParser import CustomConfigParser
 from modules.TerraformController import TerraformController
+from modules.KopsController import KopsController
 import colorama
 from colorama import Fore, Back, Style
 
 colorama.init(autoreset=True)
-
-
-
 # need to set this ENV var due to a OSX High Sierra forking bug
 # see this discussion for more details: https://github.com/ansible/ansible/issues/34056#issuecomment-352862252
 os.environ['OBJC_DISABLE_INITIALIZE_FORK_SAFETY'] = 'YES'
-
 VERSION = 1
 
 
@@ -69,7 +66,7 @@ starting program loaded for B1 battle droid """ + Back.BLACK + Fore.BLUE + Style
         sys.exit(1)
 
     if config['provider'] == 'azure' and config['kubernetes'] == '1':
-        log.error('ERROR: Kubernetes deployment only available for aws in the moment. Please change kubernetes to 0 and try again.')
+        log.error('ERROR: Kubernetes deployment only available for aws at the moment. Please change kubernetes to 0 and try again.')
         sys.exit(1)
 
     if config['provider'] == 'aws' and config['windows_client'] == '1':
@@ -85,6 +82,7 @@ starting program loaded for B1 battle droid """ + Back.BLACK + Fore.BLUE + Style
 
 def configure(args):
     configuration.new(args.config)
+
 
 def show(args):
     controller, _, _ = init(args)
@@ -119,6 +117,7 @@ def simulate(args):
         simulation_atomics = 'no'
 
     return controller.simulate(simulation_engine, target, simulation_techniques_param, simulation_techniques, simulation_atomics, simulation_playbook)
+
 
 def dump(args):
     controller, _, _ = init(args)
@@ -240,17 +239,17 @@ def main(args):
 
     # Replay Arguments
     replay_parser.add_argument("-dn", "--dump_name", required=True,
-                               help="name for the data dump folder under attack_data/")
+                                help="name for the data dump folder under attack_data/")
     replay_parser.add_argument("-fn", "--file_name", required=True,
-                               help="file name of the attack_data")
+                                help="file name of the attack_data")
     replay_parser.add_argument("--source", required=True,
-                        help="source of replayed data")
+                                help="source of replayed data")
     replay_parser.add_argument("--sourcetype", required=True,
-                        help="sourcetype of replayed data")
+                                help="sourcetype of replayed data")
     replay_parser.add_argument("--index", required=True,
-                        help="index of replayed data")
+                                help="index of replayed data")
     replay_parser.add_argument("--update_timestamp", required=False, default=False,
-                             action="store_true", help="update timestamps of replayed data")
+                                action="store_true", help="update timestamps of replayed data")
     replay_parser.set_defaults(func=replay)
 
     # Test Arguments
@@ -270,7 +269,6 @@ def main(args):
     search_parser.add_argument("--latest", required=False, default="now",
                              help="latest time of the splunk search")
     search_parser.set_defaults(func=search)
-
 
     # Show arguments
     show_parser.add_argument("-m", "--machines", required=False, default=False,

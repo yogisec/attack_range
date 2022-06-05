@@ -2,7 +2,7 @@
 from asyncio import format_helpers
 from modules.IEnvironmentController import IEnvironmentController
 from python_terraform import *
-from modules import aws_service, splunk_sdk, github_service, azure_service
+from modules import aws_service, splunk_sdk, github_service, azure_service, KopsController
 from tabulate import tabulate
 import ansible_runner
 import yaml
@@ -53,12 +53,32 @@ class TerraformController(IEnvironmentController):
 
         self.terraform = Terraform(working_dir=working_dir,variables=variables, parallelism=15 ,state=config.get("statepath"))
 
-
     def build(self):
         self.log.info("[action] > build\n")
         cwd = os.getcwd()
         os.system('cd ' + os.path.join(os.path.dirname(__file__), '../terraform', self.config['provider'], self.config['tf_backend']) + ' && terraform init ')
         os.system('cd ' + cwd)
+
+        print(f"Kubernetes config value: {self.config['kubernetes']}")
+        if self.config['kubernetes'] == '1':
+            print('[ ]Attempting to build k8s cluster, wish me luck')
+            cluster_control = KopsController.KopsController(self.config)
+            cluster_control.define_cluster_specs()
+            cluster_control.build_cluster()
+            timer = 600
+            while timer > 0:
+                try:
+                    nodes = cluster_control.get_cluster_state()
+                    timer = 0
+                except Exception:
+                    print('[ ] Waiting for Cluster to become available')
+                time.sleep(60)
+                timer = timer - 60
+            print('[+] Cluster should be created')
+
+            nodes = cluster_control.get_cluster_state()
+            print(str(nodes))
+
         return_code, stdout, stderr = self.terraform.apply(
             capture_output='yes', skip_plan=True, no_color=IsNotFlagged)
         if not return_code:
@@ -76,6 +96,10 @@ class TerraformController(IEnvironmentController):
         self.log.info("Destroyed with return code: " + str(return_code))
         statepath = self.config["statepath"]
         statebakpath = self.config["statepath"] + ".backup"
+        if self.config['kubernetes'] == '1':
+            print('[ ]Attempting to destroy k8s cluster, wish me luck')
+            cluster_control = KopsController.KopsController(self.config)
+            cluster_control.destroy_cluster()
         if os.path.exists(statepath) and return_code==0:
             try:
                 os.remove(statepath)

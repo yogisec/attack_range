@@ -400,7 +400,7 @@ starting configuration for AT-ST mech walker
         },
         {
             'type': 'confirm',
-            'message': 'shall we build a Kubernetes cluster (aws only)',
+            'message': 'shall we build a kubernetes cluster (aws only)',
             'name': 'kubernetes_cluster',
             'default': False,
         }
@@ -481,6 +481,24 @@ starting configuration for AT-ST mech walker
         configuration._sections['environment']['phantom_server'] = 1
         configuration._sections['environment']['phantom_byo'] = 0
 
+    if (enabled(answers['kubernetes_cluster'])):
+        questions = [
+            {
+                'type': 'confirm',
+                'message': 'shall we allow anonymous authentication to the kubelets?',
+                'name': 'k8s_anon_kubelet',
+                'default': False,
+            },
+            {
+                'type': 'confirm',
+                'message': 'shall we allow anonymous authentication to the k8s api-server?',
+                'name': 'k8s_anon_api',
+                'default': False,
+            },
+        ]
+        answers = prompt(questions)
+        configuration._sections['kubernetes_cluster']['k8s_anon_kubelet'] = answers['k8s_anon_kubelet']
+        configuration._sections['kubernetes_cluster']['k8s_anon_api'] = answers['k8s_anon_api']
 
     # write config file
     with open(attack_range_config, 'w') as configfile:

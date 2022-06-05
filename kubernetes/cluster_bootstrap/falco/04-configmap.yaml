@@ -31,7 +31,7 @@ data:
     time_format_iso_8601: false
 
     # Whether to output events in json or text
-    json_output: false
+    json_output: true
 
     # When using json output, whether or not to include the "output" property
     # itself (e.g. "File below a known binary directory opened for writing
@@ -46,8 +46,8 @@ data:
 
     # Send information logs to stderr and/or syslog Note these are *not* security
     # notification logs! These are just Falco lifecycle (and possibly error) logs.
-    log_stderr: true
-    log_syslog: true
+    log_stderr: false
+    log_syslog: false
 
     # Minimum log level to include in logs. Note: these levels are
     # separate from the priority field of rules. This refers only to the
@@ -3506,6 +3506,18 @@ data:
     # Application rules have moved to application_rules.yaml. Please look
     # there if you want to enable them by adding to
     # falco_rules.local.yaml.
+
+    - macro: kubelet_sport
+      condition: fd.sport="10250"
+
+    - rule: kubelet api request
+      desc: >
+        Detect direct communication to kublet exposed on 10250
+      condition: kubelet_sport
+      output: Kublet request (server_port=%fd.sport client_port=%fd.cport client_ip=%fd.cip server_ip=%fd.sip	 user=%user.name user_loginuid=%user.loginuid process=%proc.name command=%proc.cmdline )
+      priority: WARNING
+      tags: [k8s]     
+
   k8s_audit_rules.yaml: |
     #
     # Copyright (C) 2019 The Falco Authors.

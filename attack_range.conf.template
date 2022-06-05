@@ -491,3 +491,7 @@ aurora_agent_url = https://update1.nextron-systems.com/getupdate.php?product=aur
 
 aurora_agent_license = https://portal.nextron-systems.com/api/lite/license/2022-2/6beda56036fbe184dd0950fd24acfd59_a1f1081c9d6f0dc29aa0e5609fadf855.lic
 # specify the license url that contains the license to use for the aurora agent.
+
+[kubernetes_cluster]
+k8s_anon_kubelet = false
+k8s_anon_api = false
